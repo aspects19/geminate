@@ -1,0 +1,12 @@
+[package]
+name = "geminate"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gemini-rs = "0.4.2"
+termimad = "0.31.2"
+
+[[bin]]
+name = "geminate"
+path = "main.rs"
