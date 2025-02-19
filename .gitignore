@@ -2,6 +2,7 @@
 main
 learn.rs
 learn
+.env
 
 # Added by cargo
 #
