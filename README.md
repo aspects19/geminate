@@ -16,7 +16,7 @@ This project has the following featues.
 - [ ] Memory so this binary has memory of past prompts within a chat.
 - [ ] Eye catching UI.
 - [ ] Setting of GEMINI_API in system environment.
-- [ ] Publishing on *cargo*, *RPM Fusion* and *scoop*.
+- [ ] Publishing to *RPM Fusion* and *scoop*.
 
 ## Installation 
 
