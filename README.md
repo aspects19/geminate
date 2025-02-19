@@ -44,11 +44,11 @@ This will create a binary in `./target/release/` that can run as a standalone ap
 
 ## Contributions
 
-If You wish to make contributions to this project such as reporting issues and bugs, fixing them and adding features, take a look at [contribution guide](https://github.com/aspects19/geminate/CONTRIBUTING.md)
+If You wish to make contributions to this project such as reporting issues and bugs, fixing them and adding features, take a look at [contribution guide](https://github.com/aspects19/geminate/blob/main/CONTRIBUTING.md)
 
 ## License
 
-This project is licensed under the MIT License – see the [LICENSE](https://github.com/aspects19/geminate/LICENSE) file for details.
+This project is licensed under the MIT License – see the [LICENSE](https://github.com/aspects19/geminate/blob/main/LICENSE) file for details.
 
 ##
 
