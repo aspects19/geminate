@@ -1,7 +1,8 @@
 /target
 main
-learn.rs
-learn
+
+# secrets
+.env
 
 # Added by cargo
 #
