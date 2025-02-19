@@ -20,7 +20,7 @@ This project has the following featues.
 
 ## Installation 
 
-To install the project you need to clone download the binary from the [releases](https://github.com/geminate/releases) page.
+To install the project you need to clone download the binary from the [releases](https://github.com/aspects19/geminate/releases/tag/bin) page.
 There are future plans to publish it to Package managers.
 
 ### Build from source
