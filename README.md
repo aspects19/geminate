@@ -17,7 +17,6 @@ This project has the following featues.
 - [ ] Eye catching UI.
 - [ ] Setting of GEMINI_API in system environment.
 - [ ] Publishing on *cargo*, *RPM Fusion* and *scoop*.
-- [ ]
 
 ## Installation 
 
@@ -32,16 +31,20 @@ To build this project from source do the following
     ``` sh
     git clone https://github.com/aspects19/geminate
     ```
-3. Navigate to the project and build the project.
+3. Navigate to the project.
     ``` sh
     cd geminate
+    ```
+4. Build the project using.
+    ``` sh
     cargo build --release
     ```
-This will create a binary in that can run as a standalone app.
+
+This will create a binary in `./target/release/` that can run as a standalone app.
 
 ## Contributions
 
-If You wish to make contributions to this project such as reporting issues and bugs, fixing them and adding features, take a look at [contribution guide](https://github.com/aspects19/weather-app/CONTRIBUTING.md)
+If You wish to make contributions to this project such as reporting issues and bugs, fixing them and adding features, take a look at [contribution guide](https://github.com/aspects19/geminate/CONTRIBUTING.md)
 
 ## License
 
@@ -49,4 +52,4 @@ This project is licensed under the MIT License – see the [LICENSE](https://git
 
 ##
 
-Thanks for checking out the Weather App! 🌦️ Feel free to open issues, fork the repository, or contribute to making it even better!
+Thanks for checking out the Geminate! Feel free to open issues, fork the repository, or contribute to making it even better!
