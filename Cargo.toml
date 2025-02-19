@@ -4,9 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+crossterm = "0.28.1"
+dotenvy = "0.15.7"
 gemini-rs = "0.4.2"
 termimad = "0.31.2"
+tokio = "1.43.0"
 
 [[bin]]
 name = "geminate"
-path = "main.rs"
+path = "src/main.rs"
