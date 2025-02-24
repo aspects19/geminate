@@ -1,9 +1,9 @@
-use std::{env, io};
 use dotenvy::dotenv;
 use gemini_rs::Conversation;
-use tokio::main; 
+use std::{env, io};
 use termimad::crossterm::style::Color::*;
 use termimad::*;
+use tokio::main;
 
 #[main]
 async fn main() {
@@ -24,7 +24,7 @@ async fn main() {
 
     skin.print_text("Hi👋 I'm Gemini. How can I help you today?");
 
-   loop {     
+    loop {
         let mut user_input = String::new();
         io::stdin()
             .read_line(&mut user_input)
@@ -33,8 +33,7 @@ async fn main() {
         let user_input = user_input.trim();
 
         let ai_response = convo.prompt(user_input).await;
-    
-        skin.print_text(&ai_response);}
-     
-    
+
+        skin.print_text(&ai_response);
+    }
 }
