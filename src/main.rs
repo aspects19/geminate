@@ -39,6 +39,75 @@ fn list_files_in_dir(dir: &Path) -> Option<Vec<PathBuf>> {
     }
 }
 
+fn prompt_for_conv(skin: &MadSkin) -> bool {
+    loop {
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read input");
+
+        let input = input.trim().to_lowercase();
+
+        match input.as_str() {
+            "y" | "" => return true,
+            "n" => return false,
+            _ => skin.print_text("Invalid input. Please enter 'Y' or 'N'."),
+        }
+    }
+}
+
+fn load_old_conversation(skin: &mut MadSkin, convo: &mut Conversation, conv_uuid: &mut Uuid) {
+    match list_files_in_dir(CONV_DIR.as_path()) {
+        None => {
+            skin.print_text(
+                format!("No old convos found in {}", CONV_DIR.as_path().display()).as_str(),
+            );
+            skin.print_text("Creating new conversation...");
+        }
+        Some(old_convos) => {
+            skin.print_text("Enter valid index to choose convo: ");
+
+            for (index, convo) in old_convos.iter().enumerate() {
+                skin.print_text(format!("[{}], {}", index, convo.to_str().unwrap()).as_str());
+            }
+
+            loop {
+                let mut pick = String::new();
+                io::stdin()
+                    .read_line(&mut pick)
+                    .expect("Failed to read input");
+
+                match pick.trim().parse::<usize>() {
+                    Ok(pick) => {
+                        if pick < old_convos.len() {
+                            skin.print_text(
+                                format!("You selected: {}", old_convos[pick].to_str().unwrap())
+                                    .as_str(),
+                            );
+                            convo.load(old_convos[pick].to_str().unwrap());
+                            let file_name = old_convos[pick].file_name().unwrap().to_str().unwrap();
+
+                            *conv_uuid = file_name
+                                .strip_prefix("convo-")
+                                .unwrap()
+                                .strip_suffix(".txt")
+                                .unwrap()
+                                .parse()
+                                .unwrap();
+                            break;
+                        } else {
+                            skin.print_text("Invalid index. Try again!");
+                        }
+                    }
+                    Err(_) => {
+                        skin.print_text("Invalid input. Please enter a number.");
+                    }
+                }
+            }
+        }
+    }
+}
+
 #[main]
 async fn main() {
     dotenv().ok();
@@ -59,78 +128,15 @@ async fn main() {
 
     skin.print_text("Would you like to create a new conversation? (Y/n)");
 
-    let new_conv = loop {
-        let mut input = String::new();
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read input");
-
-        let input = input.trim().to_lowercase();
-
-        match input.as_str() {
-            "y" | "n" | "" => break input,
-            _ => skin.print_text("Invalid input. Please enter 'Y' or 'N'."),
-        }
-    };
-
     let mut conv_uuid: Uuid = Uuid::new_v4();
-    if new_conv == "y" || new_conv == "" {
+    if prompt_for_conv(&skin) {
         skin.print_text("Starting a new conversation...");
     } else {
         skin.print_text("Continuing with existing conversations...");
-        match list_files_in_dir(CONV_DIR.as_path()) {
-            None => {
-                skin.print_text(format!("No old convos found in {}", CONV_DIR.as_path().display()).as_str());
-                skin.print_text("Creating new conversation...");
-            }
-            Some(old_convos) => {
-                skin.print_text("Enter valid index to choose convo: ");
-
-                for (index, convo) in old_convos.iter().enumerate() {
-                    skin.print_text(format!("[{}], {}", index, convo.to_str().unwrap()).as_str());
-                }
-
-                loop {
-                    let mut pick = String::new();
-                    io::stdin()
-                        .read_line(&mut pick)
-                        .expect("Failed to read input");
-
-                    match pick.trim().parse::<usize>() {
-                        Ok(pick) => {
-                            if pick < old_convos.len() {
-                                skin.print_text(
-                                    format!("You selected: {}", old_convos[pick].to_str().unwrap())
-                                        .as_str(),
-                                );
-                                convo.load(old_convos[pick].to_str().unwrap());
-                                // this is dirty chaining calls tbh
-                                conv_uuid = old_convos[pick]
-                                    .file_name()
-                                    .unwrap()
-                                    .to_str()
-                                    .unwrap()
-                                    .strip_prefix("convo-")
-                                    .unwrap()
-                                    .strip_suffix(".txt")
-                                    .unwrap()
-                                    .parse()
-                                    .unwrap();
-                                break;
-                            } else {
-                                skin.print_text("Invalid index. Try again!");
-                            }
-                        }
-                        Err(_) => {
-                            skin.print_text("Invalid input. Please enter a number.");
-                        }
-                    }
-                }
-            }
-        }
+        load_old_conversation(&mut skin, &mut convo, &mut conv_uuid);
     }
 
-    skin.print_text("Hi👋 I'm Gemini. How can I help you today?");
+    skin.print_text("Hi👋 I'm Gemini. How can I help you today? (type 'exit' to leave)");
     loop {
         let mut user_input = String::new();
         io::stdin()
@@ -151,12 +157,12 @@ async fn main() {
         skin.print_text(&ai_response);
     }
 
-    convo.save(
-        CONV_DIR
-            .join(format!("convo-{}.txt", conv_uuid))
-            .to_str()
-            .unwrap(),
-    );
+    let conv_path = CONV_DIR
+        .join(format!("convo-{}.txt", conv_uuid));
 
-    skin.print_text(format!("Convo saved with uuid: {}", conv_uuid).as_str());
+    let path = conv_path.to_str().unwrap();
+
+    convo.save(path);
+
+    skin.print_text(format!("Conversation saved in: {}", path).as_str());
 }
