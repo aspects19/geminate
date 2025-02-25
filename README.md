@@ -9,7 +9,7 @@
 **Geminate** is a lightweight Rust based CLI tool to interact with **Google Gemini** in your terminal. 
 
 ## Features
-This project has the following featues.
+This project has the following features.
 
 - [x] Back and forth communication with Gemini API.
 - [x] Fast and efficient as it is written in Rust.
