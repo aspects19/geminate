@@ -13,7 +13,7 @@ This project has the following features.
 
 - [x] Back and forth communication with Gemini API.
 - [x] Fast and efficient as it is written in Rust.
-- [x] Memory so this binary has remember of past prompts within a chat.
+- [x] Memory so this binary can remember your past prompts within a chat.
 - [ ] Eye catching UI.
 - [ ] Setting of GEMINI_API in system environment.
 - [ ] Publishing to *RPM Fusion* and *scoop*.
