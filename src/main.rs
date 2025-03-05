@@ -1,3 +1,4 @@
+use crossterm::style::Stylize;
 use dotenvy::dotenv;
 use gemini_rs::Conversation;
 use std::fs;
@@ -15,6 +16,72 @@ static CONV_DIR: LazyLock<PathBuf, fn() -> PathBuf> = LazyLock::new(|| {
         .unwrap_or_else(|| std::path::PathBuf::from("."))
         .join("gemini-chat/convos")
 });
+
+fn display_logo() {
+    println!("{}", "\n");
+    println!("    ██████╗ ███████╗███╗   ███╗██╗███╗   ██╗ █████╗ ████████╗███████╗");
+    println!("   ██╔════╝ ██╔════╝████╗ ████║██║████╗  ██║██╔══██╗╚══██╔══╝██╔════╝");
+    println!("   ██║  ███╗█████╗  ██╔████╔██║██║██╔██╗ ██║███████║   ██║   █████╗  ");
+    println!("   ██║   ██║██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║██╔══██║   ██║   ██╔══╝  ");
+    println!("   ╚██████╔╝███████╗██║ ╚═╝ ██║██║██║ ╚████║██║  ██║   ██║   ███████╗");
+    println!("    ╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝   ╚═╝   ╚══════╝");
+    println!("{}", "\n");
+}
+
+fn display_user_message(message: &str) {
+    let width = terminal_size().0.min(100);
+    let mut output = String::new();
+
+    output.push_str("\n╭");
+    output.push_str(&"─".repeat(width - 2));
+    output.push_str("╮\n");
+
+    let wrapped_text = textwrap::fill(message, width - 4);
+    for line in wrapped_text.lines() {
+        output.push_str("│ ");
+        output.push_str(line);
+        output.push_str(&" ".repeat(width - 4 - line.len()));
+        output.push_str(" │\n");
+    }
+
+    output.push_str("╰");
+    output.push_str(&"─".repeat(width - 2));
+    output.push_str("╯\n");
+
+    // blue
+    println!("{}", output.with(rgb(0, 120, 255)));
+}
+
+fn display_ai_message(message: &str) {
+    let width = terminal_size().0.min(100);
+    let mut output = String::new();
+
+    output.push_str("\n╭");
+    output.push_str(&"─".repeat(width - 2));
+    output.push_str("╮\n");
+
+    let wrapped_text = textwrap::fill(message, width - 4);
+    for line in wrapped_text.lines() {
+        output.push_str("│ ");
+        output.push_str(line);
+        output.push_str(&" ".repeat(width - 4 - line.len()));
+        output.push_str(" │\n");
+    }
+
+    output.push_str("╰");
+    output.push_str(&"─".repeat(width - 2));
+    output.push_str("╯\n");
+
+    // yellow
+    println!("{}", output.with(rgb(255, 187, 0)));
+}
+
+fn terminal_size() -> (usize, usize) {
+    match termimad::crossterm::terminal::size() {
+        Ok((w, h)) => (w as usize, h as usize),
+        Err(_) => (80, 24),
+    }
+}
 
 fn list_files_in_dir(dir: &Path) -> Option<Vec<PathBuf>> {
     match fs::read_dir(dir) {
@@ -113,6 +180,8 @@ async fn main() {
     dotenv().ok();
     fs::create_dir_all(CONV_DIR.as_path()).unwrap();
 
+    display_logo();
+
     let mut skin = MadSkin::default();
     skin.set_headers_fg(rgb(255, 187, 0));
     skin.bold.set_fg(Yellow);
@@ -136,29 +205,28 @@ async fn main() {
         load_old_conversation(&mut skin, &mut convo, &mut conv_uuid);
     }
 
-    skin.print_text("Hi👋 I'm Gemini. How can I help you today? (type 'exit' to leave)");
+    display_ai_message("Hi👋 I'm Gemini. How can I help you today? (type 'exit' to leave)");
+
     loop {
         let mut user_input = String::new();
         io::stdin()
             .read_line(&mut user_input)
             .expect("Failed to read input");
 
-        let user_input = user_input.trim().to_lowercase();
+        let user_input = user_input.trim();
 
-        match user_input.as_str() {
-            "exit" => {
-                break;
-            }
-            _ => {}
+        if user_input.to_lowercase() == "exit" {
+            break;
         }
 
-        let ai_response = convo.prompt(&user_input).await;
+        display_user_message(user_input);
 
-        skin.print_text(&ai_response);
+        let ai_response = convo.prompt(user_input).await;
+
+        display_ai_message(&ai_response);
     }
 
-    let conv_path = CONV_DIR
-        .join(format!("convo-{}.txt", conv_uuid));
+    let conv_path = CONV_DIR.join(format!("convo-{}.txt", conv_uuid));
 
     let path = conv_path.to_str().unwrap();
 
