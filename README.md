@@ -35,7 +35,8 @@ To build this project from source do the following
     ``` sh
     cd geminate
     ```
-4. Build the project using.
+4. rename `.env.example ` to ` .env ` and replace ` ` with a Gemini API key from [Google Labs](https://aistudio.google.com/apikey)
+5. Build the project using.
     ``` sh
     cargo build --release
     ```
