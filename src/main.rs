@@ -1,3 +1,6 @@
+mod db;
+mod api;
+
 use dotenvy::dotenv;
 use gemini_rs::Conversation;
 use std::fs;
@@ -166,3 +169,4 @@ async fn main() {
 
     skin.print_text(format!("Conversation saved in: {}", path).as_str());
 }
+
