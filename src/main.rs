@@ -10,6 +10,7 @@ use termimad::*;
 use tokio::main;
 use rusqlite::Connection;
 use crate::db::{init_db, add_chat, add_message, get_chats, get_messages};
+use crate::ui::{prompt_for_conv, select_existing_chat, print_chat_history};
 
 
 
@@ -23,53 +24,6 @@ pub fn list_chats(conn: &Connection) -> Option<Vec<(i64, String)>> {
         }
     }
 }
-
-fn prompt_for_conv(skin: &MadSkin) -> bool {
-    loop {
-        let mut input = String::new();
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read input");
-
-        let input = input.trim().to_lowercase();
-
-        match input.as_str() {
-            "y" | "" => return true,
-            "n" => return false,
-            _ => skin.print_text("Invalid input. Please enter 'Y' or 'N'."),
-        }
-    }
-}
-
-// fn load_old_conversation(conn: &Connection, skin: &mut MadSkin) -> Option<i64> {
-//     let chats = match get_chats(conn) {
-//         Ok(chats) if !chats.is_empty() => chats,
-//         _ => {
-//             skin.print_text("No previous conversations found.");
-//             return None;
-//         }
-//     };
-
-//     skin.print_text("Enter the index of the conversation you want to continue:");
-
-//     for (index, (chat_id, created_at)) in chats.iter().enumerate() {
-//         skin.print_text(format!("[{}] Chat ID: {}, Created At: {}", index, chat_id, created_at).as_str());
-//     }
-
-//     loop {
-//         let mut pick = String::new();
-//         std::io::stdin().read_line(&mut pick).expect("Failed to read input");
-
-//         match pick.trim().parse::<usize>() {
-//             Ok(index) if index < chats.len() => {
-//                 let (selected_chat_id, _) = chats[index];
-//                 skin.print_text(&format!("You selected chat ID: {}", selected_chat_id));
-//                 return Some(selected_chat_id);
-//             }
-//             _ => skin.print_text("Invalid selection. Try again!"),
-//         }
-//     }
-// }
 
 
 #[main]
@@ -112,17 +66,8 @@ async fn main() {
 
     let messages = get_messages(&conn, chat_id).expect("Failed to retrive past messages");
 
-    if messages.is_empty() {
-        skin.print_text("No previous messages available");
-    } else {
-        for (role, content, _timestamp) in messages {
-            skin.print_text(format!("[{}] {}", role, content).as_str());
-        }
-    }
+    print_chat_history(&skin, messages);
 
-    
-
-    // skin.print_text("Hi👋 I'm Gemini. How can I help you today? (type 'exit' to leave)");
 
     loop {
         let mut user_input = String::new();
@@ -156,15 +101,3 @@ async fn main() {
 }
 
 
-fn select_existing_chat(skin: &MadSkin, chats: &Vec<(i64, String)>) -> i64 {
-    loop {
-        let mut pick = String::new();
-        io::stdin()
-            .read_line(&mut pick)
-            .expect("Failed to read your input");
-        match pick.trim().parse::<usize>() {
-            Ok(pick) if pick < chats.len() => return chats[pick].0,
-            _ => skin.print_text("Invalid choice. Please enter a valid chat number."),
-        }
-    }
-}
