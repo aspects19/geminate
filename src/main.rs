@@ -29,7 +29,13 @@ pub fn list_chats(conn: &Connection) -> Option<Vec<(i64, String)>> {
 #[main]
 async fn main() {
     dotenv().ok();
-    let conn = Connection::open("gemini.db").expect("Failed to open database");
+    // Create an OS independent database storage path
+    let db_dir = dirs::data_local_dir()
+        .expect("Failed to get local data directory")
+        .join("geminate.db");
+    let db_path = db_dir.join("geminate.db");
+
+    let conn = Connection::open(db_path).expect("Failed to open database");
     init_db(&conn).expect("Failed to initialize database");
 
     let mut skin = MadSkin::default();
