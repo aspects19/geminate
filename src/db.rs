@@ -52,7 +52,7 @@ pub fn add_chat(conn: &Connection) -> Result<i64, rusqlite::Error> {
 /// * `conn` - A connection to the sqlite database
 /// * `chat_id` - An id for which this message will be stored
 /// * `role` - A role String either `user` or `gemini` 
-/// * `content` - User input all Gemini response text
+/// * `content` - User input or Gemini response text
 /// 
 /// # Returns
 /// 
