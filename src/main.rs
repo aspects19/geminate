@@ -1,5 +1,4 @@
 mod db;
-mod api;
 mod ui;
 
 use dotenvy::dotenv;
@@ -13,19 +12,6 @@ use crate::db::{init_db, add_chat, add_message, get_chats, get_messages};
 use crate::ui::{prompt_for_conv, select_existing_chat, print_chat_history};
 
 
-
-pub fn list_chats(conn: &Connection) -> Option<Vec<(i64, String)>> {
-    match get_chats(conn) {
-        Ok(chats) if !chats.is_empty() => Some(chats),
-        Ok(_) => None, // No chats found
-        Err(e) => {
-            eprintln!("Failed to retrieve chats: {}", e);
-            None
-        }
-    }
-}
-
-
 #[main]
 async fn main() {
     dotenv().ok();
@@ -35,9 +21,11 @@ async fn main() {
         .join("geminate.db");
     let db_path = db_dir.join("geminate.db");
 
+    // Initialize a database connection
     let conn = Connection::open(db_path).expect("Failed to open database");
     init_db(&conn).expect("Failed to initialize database");
 
+    // Setup UI for the output
     let mut skin = MadSkin::default();
     skin.set_headers_fg(rgb(255, 187, 0));
     skin.bold.set_fg(Yellow);
@@ -51,6 +39,7 @@ async fn main() {
         "gemini-1.5-flash".to_string(),
     );
 
+    // A vector list of all chats
     let chats = get_chats(&conn).expect("Failed to retrieve chats");
 
     let chat_id = if chats.is_empty() {
