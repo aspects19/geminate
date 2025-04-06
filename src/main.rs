@@ -109,21 +109,3 @@ async fn main() {
 
     
 }
-
-
-// fn get_data_dir() -> PathBuf {
-//     let env_mode = env::var("ENVIRONMENT").unwrap_or_else(|_| String::new());
-//     if env_mode == "dev" {
-//         PathBuf::from("../geminate.db")
-//     } else {
-//         dirs::data_local_dir()
-//         .map(|p| p.join("geminate/geminate.db"))
-//         .expect("Failed to get database path")
-//     }
-// }
-
-// fn main() {
-//     dotenv().ok();
-//     let db_path = get_data_dir();
-//     println!("{:?}", db_path );
-// }

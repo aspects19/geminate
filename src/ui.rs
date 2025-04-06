@@ -1,9 +1,9 @@
-use std::io;
+use std::io::{self, Cursor};
 use termimad::*;
-use termimad::crossterm::style::Stylize;
-use termimad::crossterm::style::Color::*;
+use termimad::crossterm::style::{Stylize, Color::*};
+use textwrap::fill;
 
-
+/// Creates and returns a custom MadSkin with specific styling settings.
 pub fn create_skin() -> MadSkin {
     let mut skin = MadSkin::default();
     skin.set_headers_fg(rgb(255, 187, 0));
@@ -15,14 +15,11 @@ pub fn create_skin() -> MadSkin {
     skin
 }
 
-
-    /// Iterates over user input to return Either true or false if a valid input is provided
-    /// 
-    /// # Arguments
-    /// 
-    /// * `skin` - Skin setting object to control rendering of output
+/// Prompts user to continue or not, expecting 'Y' or 'N'.
+/// 
+/// # Arguments
+/// * `skin` - Skin setting object to control rendering of output
 pub fn prompt_for_conv(skin: &MadSkin) -> bool {
-
     loop {
         let mut input = String::new();
         io::stdin()
@@ -39,19 +36,15 @@ pub fn prompt_for_conv(skin: &MadSkin) -> bool {
     }
 }
 
-/// Picks a chat based on user input
-    /// 
-    /// # Arguments 
-    /// 
-    /// * `skin` - Skin setting object to control rendering of output
-    /// * `chats` - Vector containing the chat list to choose from
-    /// 
-    /// # Returns
-    /// 
-    /// A usize integer of the chat number
-    /// 
+/// Allows user to select an existing chat by number.
+/// 
+/// # Arguments
+/// * `skin` - Skin setting object to control rendering of output
+/// * `chats` - Vector containing the chat list to choose from
+/// 
+/// # Returns
+/// * i64 - Selected chat ID
 pub fn select_existing_chat(skin: &MadSkin, chats: &Vec<(i64, String)>) -> i64 {
-    
     loop {
         let mut pick = String::new();
         io::stdin()
@@ -64,19 +57,12 @@ pub fn select_existing_chat(skin: &MadSkin, chats: &Vec<(i64, String)>) -> i64 {
     }
 }
 
-/// Prints the whole chat history of a provided message vector list
-    /// 
-    /// # Arguments 
-    /// 
-    /// * `skin` - Skin setting object to control rendering of output
-    /// * `messages` - Message vector list to Print its contents
-    /// 
-    /// # Return
-    /// 
-    /// Null
-
+/// Prints the chat history provided.
+/// 
+/// # Arguments
+/// * `skin` - Skin setting object to control rendering of output
+/// * `messages` - Vector containing (role, content, timestamp) tuples
 pub fn print_chat_history(skin: &MadSkin, messages: Vec<(String, String, String)>) {
-    
     if messages.is_empty() {
         skin.print_text("No messages in this conversation.");
     } else {
@@ -87,6 +73,7 @@ pub fn print_chat_history(skin: &MadSkin, messages: Vec<(String, String, String)
     }
 }
 
+/// Returns the terminal's width and height as a tuple (w, h).
 pub fn terminal_size() -> (usize, usize) {
     match termimad::crossterm::terminal::size() {
         Ok((w, h)) => (w as usize, h as usize),
@@ -94,6 +81,10 @@ pub fn terminal_size() -> (usize, usize) {
     }
 }
 
+/// Displays a user message inside a simple bordered box.
+/// 
+/// # Arguments
+/// * `message` - The plain text message to display
 pub fn display_user_message(message: &str) {
     let width = terminal_size().0.min(100);
     let mut output = String::new();
@@ -102,8 +93,7 @@ pub fn display_user_message(message: &str) {
     output.push_str(&"─".repeat(width - 2));
     output.push_str("╮\n");
 
-    let wrapped_text = textwrap::fill(message, width - 4);
-    for line in wrapped_text.lines() {
+    for line in fill(message, width - 4).lines() {
         output.push_str("│ ");
         output.push_str(line);
         output.push_str(&" ".repeat(width - 4 - line.len()));
@@ -114,37 +104,52 @@ pub fn display_user_message(message: &str) {
     output.push_str(&"─".repeat(width - 2));
     output.push_str("╯\n");
 
-    // blue
-    println!("{}", output.with(rgb(0, 120, 255)));
+    println!("{}", output);
 }
 
+/// Displays an AI message with markdown formatting inside a nice box.
+/// 
+/// # Arguments
+/// * `message` - The raw markdown-formatted string
 pub fn display_ai_message(message: &str) {
-    let width: usize = terminal_size().0.min(100);
+    
+    let width = terminal_size().0.min(100).max(20);
+    println!("{}", width);
     let mut output = String::new();
-
-    let skin = MadSkin::default();
 
     output.push_str("\n╭");
     output.push_str(&"─".repeat(width - 2));
     output.push_str("╮\n");
 
-    let formatted_text = String::new();
-    skin.write_text(message)
-        .expect("failed to format text");
+    let skin = create_skin();
+    let mut buffer = Vec::new();
+    let mut writer = Cursor::new(&mut buffer);
 
-    let wrapped_text = textwrap::fill(&formatted_text, width - 4);
-    for line in wrapped_text.lines() {
+    // Write the formatted markdown into buffer
+    skin.write_text_on(&mut writer, message).unwrap();
+
+    let formatted = String::from_utf8(buffer).unwrap();
+    for line in formatted.lines() {
+        let clean_line = line.trim_end();
         output.push_str("│ ");
-        output.push_str(line);
-        output.push_str(&" ".repeat(width - 4 - line.len()));
-        output.push_str(" │\n");
+        if clean_line.len() > width - 4 {
+            // Wrap if the formatted line is too long
+            for wrapped in fill(clean_line, width - 4).lines() {
+                output.push_str(wrapped);
+                output.push_str(&" ".repeat(width.saturating_sub(4 - wrapped.len())));
+                output.push_str(" │\n│ ");
+            }
+            output.truncate(output.len() - 2); // Remove last extra "│ "
+        } else {
+            output.push_str(clean_line);
+            output.push_str(&" ".repeat(width.saturating_sub(4 + clean_line.len())));
+            output.push_str(" │\n");
+        }
     }
 
     output.push_str("╰");
     output.push_str(&"─".repeat(width - 2));
     output.push_str("╯\n");
 
-    // yellow
     println!("{}", output.with(rgb(255, 187, 0)));
 }
-
