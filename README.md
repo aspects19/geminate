@@ -20,8 +20,9 @@ This project has the following features.
 
 ## Installation 
 
-To install the project you need to clone download the binary from the [releases](https://github.com/aspects19/geminate/releases/tag/bin) page.
+To install the project you need to download the binary from the [releases](https://github.com/aspects19/geminate/releases/tag/bin) page.
 There are future plans to publish it to Package managers.
+Add **GEMINIAI_API** environmental variable to your shell.
 
 ### Build from source
 
