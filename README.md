@@ -15,13 +15,14 @@ This project has the following features.
 - [x] Fast and efficient as it is written in Rust.
 - [x] Memory so this binary can remember your past prompts within a chat.
 - [ ] Eye catching UI.
-- [ ] Setting of GEMINI_API in system environment.
+- [x] Setting of GEMINI_API in system environment.
 - [ ] Publishing to *RPM Fusion* and *scoop*.
 
 ## Installation 
 
-To install the project you need to clone download the binary from the [releases](https://github.com/aspects19/geminate/releases/tag/bin) page.
+To install the project you need to download the binary from the [releases](https://github.com/aspects19/geminate/releases/tag/bin) page.
 There are future plans to publish it to Package managers.
+Add **GEMINIAI_API** environmental variable to your shell.
 
 ### Build from source
 
@@ -35,7 +36,7 @@ To build this project from source do the following
     ``` sh
     cd geminate
     ```
-4. rename `.env.example ` to ` .env ` and replace ` ` with a Gemini API key from [Google Labs](https://aistudio.google.com/apikey)
+4. rename `.env.example ` to ` .env ` and replace ` GEMINIAI_API ` with a Gemini API key from [Google Labs](https://aistudio.google.com/apikey)
 5. Build the project using.
     ``` sh
     cargo build --release
