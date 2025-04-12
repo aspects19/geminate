@@ -1,19 +1,7 @@
-use std::io::{self, Cursor};
+use std::io;
 use termimad::*;
-use termimad::crossterm::style::{Stylize, Color::*};
 use textwrap::fill;
 
-/// Creates and returns a custom MadSkin with specific styling settings.
-pub fn create_skin() -> MadSkin {
-    let mut skin = MadSkin::default();
-    skin.set_headers_fg(rgb(255, 187, 0));
-    skin.bold.set_fg(Yellow);
-    skin.italic.set_fgbg(Magenta, rgb(30, 30, 40));
-    skin.bullet = StyledChar::from_fg_char(Yellow, '⟡');
-    skin.quote_mark.set_fg(Yellow);
-    skin.set_global_bg(rgb(61, 74, 79));
-    skin
-}
 
 /// Prompts user to continue or not, expecting 'Y' or 'N'.
 /// 
@@ -62,13 +50,14 @@ pub fn select_existing_chat(skin: &MadSkin, chats: &Vec<(i64, String)>) -> i64 {
 /// # Arguments
 /// * `skin` - Skin setting object to control rendering of output
 /// * `messages` - Vector containing (role, content, timestamp) tuples
-pub fn print_chat_history(skin: &MadSkin, messages: Vec<(String, String, String)>) {
+pub fn print_chat_history( messages: Vec<(String, String, String)>) {
     if messages.is_empty() {
-        skin.print_text("No messages in this conversation.");
+        display_ai_message("No previous messages found.");
     } else {
-        skin.print_text("Previous messages:");
+        display_ai_message("Previous messages:");
         for (role, content, _timestamp) in messages {
-            skin.print_text(format!("[{}] {}", role, content).as_str());
+            let msg = format!("[{}] {}", role, content); 
+            display_ai_message(&msg);
         }
     }
 }
@@ -107,49 +96,46 @@ pub fn display_user_message(message: &str) {
     println!("{}", output);
 }
 
-/// Displays an AI message with markdown formatting inside a nice box.
+
+/// Displays a message inside a simple bordered box.
 /// 
 /// # Arguments
-/// * `message` - The raw markdown-formatted string
-pub fn display_ai_message(message: &str) {
-    
-    let width = terminal_size().0.min(100).max(20);
-    println!("{}", width);
+/// * `message` - The plain text message to display
+pub fn display_ai_message(message: &str) -> () {
+    // Get terminal width (20 to 100 columns), using your terminal_size() function.
+    let width = terminal_size().0.min(100).max(20) as usize;
+
+    // Create a string to hold the box.
     let mut output = String::new();
 
+    // Add top border: ╭──────╮
     output.push_str("\n╭");
-    output.push_str(&"─".repeat(width - 2));
+    output.push_str(&"─".repeat(width - 2)); // Fill width minus corners.
     output.push_str("╮\n");
 
-    let skin = create_skin();
-    let mut buffer = Vec::new();
-    let mut writer = Cursor::new(&mut buffer);
+    // Use default MadSkin (no custom styles, just plain text).
+    let skin = MadSkin::default();
 
-    // Write the formatted markdown into buffer
-    skin.write_text_on(&mut writer, message).unwrap();
-
-    let formatted = String::from_utf8(buffer).unwrap();
-    for line in formatted.lines() {
-        let clean_line = line.trim_end();
+    // Split the message into lines and add them to the box.
+    for line in message.lines() {
+        let clean_line = line.trim_end(); // Remove trailing spaces.
         output.push_str("│ ");
-        if clean_line.len() > width - 4 {
-            // Wrap if the formatted line is too long
-            for wrapped in fill(clean_line, width - 4).lines() {
-                output.push_str(wrapped);
-                output.push_str(&" ".repeat(width.saturating_sub(4 - wrapped.len())));
-                output.push_str(" │\n│ ");
-            }
-            output.truncate(output.len() - 2); // Remove last extra "│ "
+        output.push_str(clean_line); // Add the line as-is, no Markdown.
+        // Add spaces to reach the right border, but don’t go negative.
+        let padding = if clean_line.len() + 4 <= width {
+            width - 4 - clean_line.len() // Total width minus borders and line.
         } else {
-            output.push_str(clean_line);
-            output.push_str(&" ".repeat(width.saturating_sub(4 + clean_line.len())));
-            output.push_str(" │\n");
-        }
+            0 // No padding if line is too long.
+        };
+        output.push_str(&" ".repeat(padding));
+        output.push_str(" │\n");
     }
 
+    // Add bottom border: ╰──────╯
     output.push_str("╰");
     output.push_str(&"─".repeat(width - 2));
     output.push_str("╯\n");
 
-    println!("{}", output.with(rgb(255, 187, 0)));
+    // Print the box using default skin (plain text, no extra colors).
+    skin.print_text(&output);
 }

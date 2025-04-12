@@ -118,6 +118,7 @@ pub fn get_messages(conn: &Connection, chat_id: i64) -> Result<Vec<(String, Stri
 /// 
 /// Null
  
+#[allow(unused)]
 pub fn delete_chat(conn: &Connection, chat_id: i64) -> Result<()> {
     conn.execute("DELETE FROM chats WHERE id = ?", params![chat_id])?;
     Ok(())
@@ -133,7 +134,7 @@ pub fn delete_chat(conn: &Connection, chat_id: i64) -> Result<()> {
 /// # Returns
 /// 
 /// Null
-
+#[allow(unused)]
 pub fn delete_message(conn: &Connection, message_id: i64) -> Result<()> {
     conn.execute("DELETE FROM messages WHERE id = ?", params![message_id])?;
     Ok(())
@@ -148,7 +149,7 @@ pub fn delete_message(conn: &Connection, message_id: i64) -> Result<()> {
 /// # Returns
 /// 
 /// Null
- 
+#[allow(unused)]
 pub fn clear_db(conn: &Connection) -> Result<()> {
     conn.execute("DELETE FROM chats", [])?;
     conn.execute("DELETE FROM messages", [])?;
