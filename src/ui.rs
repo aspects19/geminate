@@ -1,13 +1,13 @@
 use std::io;
 use termimad::*;
+use textwrap::fill;
 
-    /// Iterates over user input to return Either true or false if a valid input is provided
-    /// 
-    /// # Arguments
-    /// 
-    /// * `skin` - Skin setting object to control rendering of output
+
+/// Prompts user to continue or not, expecting 'Y' or 'N'.
+/// 
+/// # Arguments
+/// * `skin` - Skin setting object to control rendering of output
 pub fn prompt_for_conv(skin: &MadSkin) -> bool {
-
     loop {
         let mut input = String::new();
         io::stdin()
@@ -24,19 +24,15 @@ pub fn prompt_for_conv(skin: &MadSkin) -> bool {
     }
 }
 
-/// Picks a chat based on user input
-    /// 
-    /// # Arguments 
-    /// 
-    /// * `skin` - Skin setting object to control rendering of output
-    /// * `chats` - Vector containing the chat list to choose from
-    /// 
-    /// # Returns
-    /// 
-    /// A usize integer of the chat number
-    /// 
+/// Allows user to select an existing chat by number.
+/// 
+/// # Arguments
+/// * `skin` - Skin setting object to control rendering of output
+/// * `chats` - Vector containing the chat list to choose from
+/// 
+/// # Returns
+/// * i64 - Selected chat ID
 pub fn select_existing_chat(skin: &MadSkin, chats: &Vec<(i64, String)>) -> i64 {
-    
     loop {
         let mut pick = String::new();
         io::stdin()
@@ -49,25 +45,97 @@ pub fn select_existing_chat(skin: &MadSkin, chats: &Vec<(i64, String)>) -> i64 {
     }
 }
 
-/// Prints the whole chat history of a provided message vector list
-    /// 
-    /// # Arguments 
-    /// 
-    /// * `skin` - Skin setting object to control rendering of output
-    /// * `messages` - Message vector list to Print its contents
-    /// 
-    /// # Return
-    /// 
-    /// Null
-
-pub fn print_chat_history(skin: &MadSkin, messages: Vec<(String, String, String)>) {
-    
+/// Prints the chat history provided.
+/// 
+/// # Arguments
+/// * `skin` - Skin setting object to control rendering of output
+/// * `messages` - Vector containing (role, content, timestamp) tuples
+pub fn print_chat_history( messages: Vec<(String, String, String)>) {
     if messages.is_empty() {
-        skin.print_text("No messages in this conversation.");
+        display_ai_message("No previous messages found.");
     } else {
-        skin.print_text("Previous messages:");
+        display_ai_message("Previous messages:");
         for (role, content, _timestamp) in messages {
-            skin.print_text(format!("[{}] {}", role, content).as_str());
+            let msg = format!("[{}] {}", role, content); 
+            display_ai_message(&msg);
         }
     }
+}
+
+/// Returns the terminal's width and height as a tuple (w, h).
+pub fn terminal_size() -> (usize, usize) {
+    match termimad::crossterm::terminal::size() {
+        Ok((w, h)) => (w as usize, h as usize),
+        Err(_) => (80, 24),
+    }
+}
+
+/// Displays a user message inside a simple bordered box.
+/// 
+/// # Arguments
+/// * `message` - The plain text message to display
+pub fn display_user_message(message: &str) {
+    let width = terminal_size().0.min(100);
+    let mut output = String::new();
+
+    output.push_str("\n╭");
+    output.push_str(&"─".repeat(width - 2));
+    output.push_str("╮\n");
+
+    for line in fill(message, width - 4).lines() {
+        output.push_str("│ ");
+        output.push_str(line);
+        output.push_str(&" ".repeat(width - 4 - line.len()));
+        output.push_str(" │\n");
+    }
+
+    output.push_str("╰");
+    output.push_str(&"─".repeat(width - 2));
+    output.push_str("╯\n");
+
+    println!("{}", output);
+}
+
+
+/// Displays a message inside a simple bordered box.
+/// 
+/// # Arguments
+/// * `message` - The plain text message to display
+pub fn display_ai_message(message: &str) -> () {
+    // Get terminal width (20 to 100 columns), using your terminal_size() function.
+    let width = terminal_size().0.min(100).max(20) as usize;
+
+    // Create a string to hold the box.
+    let mut output = String::new();
+
+    // Add top border: ╭──────╮
+    output.push_str("\n╭");
+    output.push_str(&"─".repeat(width - 2)); // Fill width minus corners.
+    output.push_str("╮\n");
+
+    // Use default MadSkin (no custom styles, just plain text).
+    let skin = MadSkin::default();
+
+    // Split the message into lines and add them to the box.
+    for line in message.lines() {
+        let clean_line = line.trim_end(); // Remove trailing spaces.
+        output.push_str("│ ");
+        output.push_str(clean_line); // Add the line as-is, no Markdown.
+        // Add spaces to reach the right border, but don’t go negative.
+        let padding = if clean_line.len() + 4 <= width {
+            width - 4 - clean_line.len() // Total width minus borders and line.
+        } else {
+            0 // No padding if line is too long.
+        };
+        output.push_str(&" ".repeat(padding));
+        output.push_str(" │\n");
+    }
+
+    // Add bottom border: ╰──────╯
+    output.push_str("╰");
+    output.push_str(&"─".repeat(width - 2));
+    output.push_str("╯\n");
+
+    // Print the box using default skin (plain text, no extra colors).
+    skin.print_text(&output);
 }

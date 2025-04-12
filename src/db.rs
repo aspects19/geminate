@@ -68,7 +68,7 @@ pub fn add_message(conn: &Connection, chat_id: i64, role: &str, content: &str) -
 
 /// Retrives chat Vector list from a database
 /// 
-/// /// # Arguments
+/// # Arguments
 /// 
 /// * `conn` - A connection to the sqlite database
 /// 
@@ -87,7 +87,7 @@ pub fn get_chats(conn: &Connection) -> Result<Vec<(i64, String)>> {
 
 /// Retrives message Vector list from a database
 /// 
-/// /// # Arguments
+/// # Arguments
 /// 
 /// * `conn` - A connection to the sqlite database
 /// * `chat_id` - chat ID whose messages are to be returned
@@ -109,7 +109,7 @@ pub fn get_messages(conn: &Connection, chat_id: i64) -> Result<Vec<(String, Stri
 
 /// Deletes a chat and its messages whose ID has been provided from a database
 /// 
-/// /// # Arguments
+/// # Arguments
 /// 
 /// * `conn` - A connection to the sqlite database
 /// * `chat_id` - chat ID whose chat and messages is to be deleted
@@ -118,6 +118,7 @@ pub fn get_messages(conn: &Connection, chat_id: i64) -> Result<Vec<(String, Stri
 /// 
 /// Null
  
+#[allow(unused)]
 pub fn delete_chat(conn: &Connection, chat_id: i64) -> Result<()> {
     conn.execute("DELETE FROM chats WHERE id = ?", params![chat_id])?;
     Ok(())
@@ -133,7 +134,7 @@ pub fn delete_chat(conn: &Connection, chat_id: i64) -> Result<()> {
 /// # Returns
 /// 
 /// Null
-
+#[allow(unused)]
 pub fn delete_message(conn: &Connection, message_id: i64) -> Result<()> {
     conn.execute("DELETE FROM messages WHERE id = ?", params![message_id])?;
     Ok(())
@@ -141,14 +142,14 @@ pub fn delete_message(conn: &Connection, message_id: i64) -> Result<()> {
 
 /// Clears the whole database making it empty
 /// 
-/// /// # Arguments
+///  # Arguments
 /// 
 /// * `conn` - A connection to the sqlite database
 /// 
 /// # Returns
 /// 
 /// Null
- 
+#[allow(unused)]
 pub fn clear_db(conn: &Connection) -> Result<()> {
     conn.execute("DELETE FROM chats", [])?;
     conn.execute("DELETE FROM messages", [])?;
