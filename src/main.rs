@@ -4,7 +4,7 @@ mod ui;
 #[allow(unused)]
 use crate::db::{init_db, add_chat, add_message, get_chats, get_messages};
 #[allow(unused)]
-use crate::ui::{prompt_for_conv, select_existing_chat, print_chat_history, display_user_message, display_ai_message};
+use crate::ui::{prompt_for_conv, select_existing_chat, print_chat_history, display_ai_message};
 
 use std::{env, io, path::PathBuf};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
@@ -17,10 +17,11 @@ use ratatui::{
     buffer::Buffer,
     layout::Rect,
     symbols::border,
-    text::{Line, Text},
+    text::{Line, Span, Text},
     DefaultTerminal, Frame,
 };
 use rusqlite::Connection;
+use termimad::MadSkin;
 
 fn get_data_dir() -> PathBuf {
     let env_mode = env::var("ENVIRONMENT").unwrap_or_else(|_| String::new());
@@ -63,7 +64,7 @@ impl App {
         };
         App {
             exit: false,
-            chat_id: 0, // Will be set after selection or creation
+            chat_id: 0,
             messages: Vec::new(),
             input: String::new(),
             scroll: 0,
@@ -128,6 +129,7 @@ impl App {
             .border_set(border::PLAIN);
 
         let mut lines = vec![];
+        let skin = MadSkin::default();
         for (role, content) in &self.messages {
             let prefix = if role == "user" { "You: " } else { "Gemini: " };
             let styled_prefix = if role == "user" {
@@ -135,7 +137,21 @@ impl App {
             } else {
                 prefix.green().bold()
             };
-            lines.push(Line::from(vec![styled_prefix, content.as_str().into()]));
+
+            if role == "gemini" {
+                // Render Markdown for Gemini responses using MadSkin::inline
+                let rendered_text = skin
+                    .inline(content)
+                    .to_string()
+                    .lines()
+                    .map(|line| Line::from(line.to_string()))
+                    .collect::<Vec<Line>>();
+                lines.push(Line::from(vec![styled_prefix, Span::from(" ")]));
+                lines.extend(rendered_text);
+            } else {
+                // User messages are plain text
+                lines.push(Line::from(vec![styled_prefix, content.as_str().into()]));
+            }
         }
 
         let paragraph = Paragraph::new(Text::from(lines))
@@ -248,14 +264,14 @@ impl App {
             eprintln!("Error saving user message: {}", e);
         });
 
-        let ai_response = self.convo.prompt(&user_input).await; // Await async call
+        let ai_response = self.convo.prompt(&user_input).await;
         self.messages.push(("gemini".to_string(), ai_response.clone()));
         add_message(&self.conn, self.chat_id, "gemini", &ai_response).unwrap_or_else(|e| {
             eprintln!("Error saving AI response: {}", e);
         });
 
         self.input.clear();
-        self.scroll = self.messages.len() as u16; // Scroll to bottom
+        self.scroll = self.messages.len() as u16;
     }
 
     fn exit(&mut self) {
@@ -297,7 +313,7 @@ async fn main() -> io::Result<()> {
 
     let mut terminal = ratatui::init();
     let mut app = App::new(conn, convo, chats);
-    let result = app.run(&mut terminal).await; // Await async run
+    let result = app.run(&mut terminal).await;
     ratatui::restore();
     result
 }

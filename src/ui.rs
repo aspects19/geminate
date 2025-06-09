@@ -1,6 +1,6 @@
+#![allow(dead_code)]
 use std::io;
 use termimad::*;
-use textwrap::fill;
 
 
 /// Prompts user to continue or not, expecting 'Y' or 'N'.
@@ -60,40 +60,6 @@ pub fn print_chat_history( messages: Vec<(String, String, String)>) {
             display_ai_message(&msg);
         }
     }
-}
-
-/// Returns the terminal's width and height as a tuple (w, h).
-pub fn terminal_size() -> (usize, usize) {
-    match termimad::crossterm::terminal::size() {
-        Ok((w, h)) => (w as usize, h as usize),
-        Err(_) => (80, 24),
-    }
-}
-
-/// Displays a user message inside a simple bordered box.
-/// 
-/// # Arguments
-/// * `message` - The plain text message to display
-pub fn display_user_message(message: &str) {
-    let width = terminal_size().0.min(100);
-    let mut output = String::new();
-
-    output.push_str("\n╭");
-    output.push_str(&"─".repeat(width - 2));
-    output.push_str("╮\n");
-
-    for line in fill(message, width - 4).lines() {
-        output.push_str("│ ");
-        output.push_str(line);
-        output.push_str(&" ".repeat(width - 4 - line.len()));
-        output.push_str(" │\n");
-    }
-
-    output.push_str("╰");
-    output.push_str(&"─".repeat(width - 2));
-    output.push_str("╯\n");
-
-    println!("{}", output);
 }
 
 
