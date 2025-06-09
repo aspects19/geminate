@@ -1,10 +1,6 @@
-#![allow(dead_code)]
 mod db;
 mod ui;
-#[allow(unused)]
 use crate::db::{init_db, add_chat, add_message, get_chats, get_messages};
-#[allow(unused)]
-use crate::ui::{prompt_for_conv, select_existing_chat, print_chat_history, display_ai_message};
 
 use std::{env, io, path::PathBuf};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
